@@ -1,6 +1,7 @@
 # CAT-DTI
 
 The source code developed in Python 3.8 using PyTorch 1.7.1. The required python dependencies are given below：
+
     torch>=1.7.1
     dgl>=0.7.1
     dgllife>=0.2.8
