@@ -21,7 +21,7 @@ parser.add_argument('--cfg', required=True, help="path to config file", type=str
 parser.add_argument('--data', required=True, type=str, metavar='TASK',
                     help='dataset')
 
-parser.add_argument('--split', default='random', type=str, metavar='S', help="split task", choices=['random', 'cold', 'cluster'])
+parser.add_argument('--split', default='random', type=str, metavar='S', help="split task", choices=['random', 'cluster'])
 args = parser.parse_args()
 
 
