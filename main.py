@@ -1,9 +1,3 @@
-comet_support = True
-try:
-    from comet_ml import Experiment
-except ImportError as e:
-    print("Comet ML is not installed, ignore the comet experiment monitor")
-    comet_support = False
 from models import CATDTI
 from time import time
 from utils import set_seed, graph_collate_func, mkdir
