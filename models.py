@@ -132,35 +132,6 @@ class MolecularGCN(nn.Module):
         return node_feats
 
 
-class ProteinCNN(nn.Module):
-    def __init__(self, embedding_dim, num_filters, kernel_size, padding=True):
-        super(ProteinCNN, self).__init__()
-        if padding:
-            self.embedding = nn.Embedding(26, embedding_dim, padding_idx=0)
-        else:
-            self.embedding = nn.Embedding(26, embedding_dim)
-
-        in_ch = [embedding_dim] + num_filters
-        self.in_ch = in_ch[-1]
-        kernels = kernel_size
-        self.conv1 = nn.Conv1d(in_channels=in_ch[0], out_channels=in_ch[1], kernel_size=kernels[0])
-        self.bn1 = nn.BatchNorm1d(in_ch[1])
-        self.conv2 = nn.Conv1d(in_channels=in_ch[1], out_channels=in_ch[2], kernel_size=kernels[1])
-        self.bn2 = nn.BatchNorm1d(in_ch[2])
-        self.conv3 = nn.Conv1d(in_channels=in_ch[2], out_channels=in_ch[3], kernel_size=kernels[2])
-        self.bn3 = nn.BatchNorm1d(in_ch[3])
-
-    def forward(self, v):
-
-        v = self.embedding(v.long())
-        v = v.transpose(2, 1)
-        v = self.bn1(F.relu(self.conv1(v)))
-        v = self.bn2(F.relu(self.conv2(v)))
-        v = self.bn3(F.relu(self.conv3(v)))
-        v = v.view(v.size(0), v.size(2), -1)
-        return v
-
-
 class MLPDecoder(nn.Module):
     def __init__(self, in_dim, hidden_dim, out_dim, binary=1):
         super(MLPDecoder, self).__init__()
@@ -267,7 +238,6 @@ class RelativeMultiHeadAttention(nn.Module):
         self.d_head = int(d_model / num_heads)
         self.num_heads = num_heads
         self.sqrt_dim = math.sqrt(d_model)
-
         self.query_proj = Linear(d_model, d_model)
         self.key_proj = Linear(d_model, d_model)
         self.value_proj = Linear(d_model, d_model)
@@ -288,12 +258,10 @@ class RelativeMultiHeadAttention(nn.Module):
             mask: Tensor,
     ) -> Tensor:
         batch_size = value.size(0)
-
         query = self.query_proj(query).view(batch_size, -1, self.num_heads, self.d_head)
         key = self.key_proj(key).view(batch_size, -1, self.num_heads, self.d_head).permute(0, 2, 1, 3)
         value = self.value_proj(value).view(batch_size, -1, self.num_heads, self.d_head).permute(0, 2, 1, 3)
         pos_embedding = self.pos_proj(pos_embedding).view(batch_size, -1, self.num_heads, self.d_head)
-
         content_score = torch.matmul((query + self.u_bias).transpose(1, 2), key.transpose(2, 3))
         pos_score = torch.matmul((query + self.v_bias).transpose(1, 2), pos_embedding.permute(0, 2, 3, 1))
         pos_score = self._relative_shift(pos_score)
